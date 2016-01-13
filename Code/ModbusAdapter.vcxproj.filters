@@ -16,12 +16,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ModbusAdapter.ino" />
+    <None Include="Code.licenseheader" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RtuMaster.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TcpSlave.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Setup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,7 +36,10 @@
     <ClInclude Include="TcpSlave.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="__vm\.ModbusAdapter.vsarduino.h">
+    <ClInclude Include="__vm\.Code.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Setup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

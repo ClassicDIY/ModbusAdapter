@@ -74,8 +74,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\cores\esp8266;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\variants\nodemcu;C:\Users\Me\Google Drive\Dev\Github\ModbusAdapter;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\libraries\ESP8266WiFi\src;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\libraries\ESP8266WiFi\src\utility;C:\Program Files (x86)\Arduino\libraries;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\djceu5im.uh3\Micro Platforms\default\debuggers;C:\Users\Me\Google Drive\Dev\Arduino\libraries;C:\Users\Me\Google Drive\Dev\Github\ModbusAdapter;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\cores\esp8266;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\variants\nodemcu;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\libraries\ESP8266WiFi\src;C:\Program Files (x86)\Arduino\libraries;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\djceu5im.uh3\Micro Platforms\default\debuggers;C:\Users\Me\Google Drive\Dev\Arduino\libraries;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9\xtensa-lx106-elf\include;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ForcedIncludeFiles>C:\Users\Me\Google Drive\Dev\Arduino\ModbusAdapter\__vm\.ModbusAdapter.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <AdditionalIncludeDirectories>C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\cores\esp8266;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\variants\nodemcu;C:\Users\Me\Google Drive\Dev\Github\ModbusAdapter\Code;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\libraries\ESP8266WiFi\src;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\libraries\ESP8266WiFi\src\utility;C:\Program Files (x86)\Arduino\libraries;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\libraries;C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\Extensions\djceu5im.uh3\Micro Platforms\default\debuggers;C:\Users\Me\Google Drive\Dev\Arduino\libraries;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9\xtensa-lx106-elf\include;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\Me\AppData\Roaming\arduino15\packages\esp8266\hardware\esp8266\1.6.5-947-g39819f0\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>C:\Users\Me\Google Drive\Dev\Github\ModbusAdapter\Code\__vm\.Code.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;__ets__;ICACHE_FLASH;F_CPU=160000000L;ARDUINO=165;ARDUINO_ESP8266_ESP12;ARDUINO_ARCH_ESP8266;__cplusplus;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -122,18 +122,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="Code.licenseheader" />
     <None Include="ModbusAdapter.ino">
       <FileType>CppCode</FileType>
     </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RtuMaster.cpp" />
+    <ClCompile Include="Setup.cpp" />
     <ClCompile Include="TcpSlave.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RtuMaster.h" />
+    <ClInclude Include="Setup.h" />
     <ClInclude Include="TcpSlave.h" />
-    <ClInclude Include="__vm\.ModbusAdapter.vsarduino.h" />
+    <ClInclude Include="__vm\.Code.vsarduino.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
