@@ -19,7 +19,7 @@
 #define MODBUSIP_PORT 	  502
 #define MODBUSIP_MAXFRAME 200
 #define MODBUSIP_TIMEOUT   10
-#define TCP_BUFFER_SIZE 260
+#define TCP_BUFFER_SIZE 300
 
 class TcpSlave
 {

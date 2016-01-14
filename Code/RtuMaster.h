@@ -15,7 +15,7 @@
 #pragma once
 #include "Arduino.h"
 
-#define RTU_BUFFER_SIZE 256
+#define RTU_BUFFER_SIZE 264
 #define RtuTimeout 1000
 #define RtuRetryCount 10
 
@@ -57,7 +57,7 @@ public:
 	RtuMaster();
 	~RtuMaster();
 	void Init(long baudRate, unsigned char id);
-	void Transfer(unsigned int transactionId, byte* v);
+	void Transfer(byte MBAP[], byte* v);
 	Status::RtuError TransferBack(byte *frame);
 	void Read(unsigned int address, unsigned int no_of_registers);
 	Status::RtuError CheckResponse(unsigned int no_of_registers, unsigned int* register_array);
@@ -69,7 +69,7 @@ private:
 	unsigned int calculateCRC(unsigned char bufferSize);
 	void sendPacket(unsigned char bufferSize);
 	
-	unsigned char getData();
+	Status::RtuError getData();
 	void check_F3_data(unsigned char buffer, unsigned int no_of_registers, unsigned int* register_array);
 };
 

@@ -80,13 +80,14 @@ void TcpSlave::task() {
 					free(_frame);
 					return;   //Not a MODBUSIP packet
 				}
-				_rtuMaster.Transfer(_MBAP[6], _frame);
+				_rtuMaster.Transfer(_MBAP, _frame);
 				free(_frame);
 				_len = 0;
 			}
 			else {
 				if (_rtuMaster.TransferBack(_sendbuffer) == Status::ok) {
-					size_t len = _sendbuffer[8] + 8;
+					long unsigned int len = _sendbuffer[8];
+					len += 9;
 					_client.write((byte*)_sendbuffer, len);
 				}
 			}

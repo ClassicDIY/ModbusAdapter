@@ -52,10 +52,10 @@ void RtuMaster::Init(long baudRate, unsigned char id)
 	slaveId = id;
 }
 
-void RtuMaster::Transfer(unsigned int unitId, byte* v)
+void RtuMaster::Transfer(byte MBAP[], byte* v)
 {
-
-	_frame[0] = unitId;
+	_transactionId = (MBAP[0] << 8) | MBAP[1];
+	_frame[0] = MBAP[6];
 	for (int i = 0; i < 6; i++) {
 		_frame[i+1] = v[i];
 	}
@@ -85,11 +85,12 @@ void RtuMaster::Transfer(unsigned int unitId, byte* v)
 
 Status::RtuError RtuMaster::TransferBack(byte *tcpFrame)
 {
-	unsigned char buffer = getData();
-	if (buffer > 0) // if there's something in the buffer continue
+	rtuError = getData();
+	if (rtuError == Status::ok) // if there's something in the buffer continue
 	{
+		
 		unsigned int len;
-		len = 8 + _frame[2]; // MBAP length + UID + Data Length
+		len = 3 + _frame[2]; // MBAP length + UID + Data Length
 		tcpFrame[0] = _transactionId >> 8; // transaction Id
 		tcpFrame[1] = _transactionId & 0xFF;
 		tcpFrame[2] = 0;
@@ -102,7 +103,7 @@ Status::RtuError RtuMaster::TransferBack(byte *tcpFrame)
 		word val;
 		word i = 0;
 		while (len--) {
-			tcpFrame[i+8] = _frame[i+3];
+			tcpFrame[i+9] = _frame[i+3];
 			i++;
 		}
 		rtuError = Status::ok;
@@ -240,9 +241,9 @@ void RtuMaster::sendPacket(unsigned char bufferSize)
 }
 
 // get the serial data from the buffer
-unsigned char RtuMaster::getData()
+Status::RtuError RtuMaster::getData()
 {
-	unsigned char buffer = 0;
+	unsigned int index = 0;
 	unsigned char overflowFlag = 0;
 
 	while (Serial.available())
@@ -255,11 +256,11 @@ unsigned char RtuMaster::getData()
 			Serial.read();
 		else
 		{
-			if (buffer == RTU_BUFFER_SIZE)
+			if (index == RTU_BUFFER_SIZE) {
 				overflowFlag = 1;
-
-			_frame[buffer] = Serial.read();
-			buffer++;
+			}
+			_frame[index] = Serial.read();
+			index++;
 		}
 
 		delayMicroseconds(T1_5); // inter character time out
@@ -271,11 +272,11 @@ unsigned char RtuMaster::getData()
 	// The serial buffer limits this to 128 bytes.
 	// If the buffer overflows than clear the buffer and set
 	// a packet error.
-	if ((buffer > 0 && buffer < 5) || overflowFlag)
+	if ((index > 0 && index < 5) || overflowFlag)
 	{
-		buffer = 0;
-		rtuError = Status::buffer_errors;
+		index = 0;
+		return Status::buffer_errors;
 	}
 
-	return buffer;
+	return index == 0 ? Status::nothing : Status::ok;
 }

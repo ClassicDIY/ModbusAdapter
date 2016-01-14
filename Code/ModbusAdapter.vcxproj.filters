@@ -36,10 +36,10 @@
     <ClInclude Include="TcpSlave.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="__vm\.Code.vsarduino.h">
+    <ClInclude Include="Setup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Setup.h">
+    <ClInclude Include="__vm\.Code.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
