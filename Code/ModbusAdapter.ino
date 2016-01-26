@@ -21,15 +21,13 @@
 #include <ESP8266WiFi.h>
 #include <SoftwareSerial.h>
 #include "TcpSlave.h"
+#include "NotInGit.h"
 
 #include "Trace.h"
 
 #define MODBUS_BAUD 19200
 #define SERIAL_BAUD 115200
 #define SLAVE_ID 10
-
-const char* ssid_ap = "Bangor";
-const char* password = "acura22546";
 
 int freq = 5000;
 uint8_t gpio_id;

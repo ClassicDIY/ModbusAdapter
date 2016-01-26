@@ -220,3 +220,4 @@ bin/
 obj/
 __vm/
 .vs/
+Code/NotInGit.h
