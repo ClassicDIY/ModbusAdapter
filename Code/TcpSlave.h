@@ -13,13 +13,16 @@
 */
 #pragma once
 
+#include "Arduino.h"
 #include <ESP8266WiFi.h>
 #include "RtuMaster.h"
+#include "Trace.h"
 
 #define MODBUSIP_PORT 	  502
 #define MODBUSIP_MAXFRAME 200
 #define MODBUSIP_TIMEOUT   10
 #define TCP_BUFFER_SIZE 300
+
 
 class TcpSlave
 {
@@ -30,11 +33,13 @@ private:
 	byte *_frame;
 	byte  _len;
 	RtuMaster _rtuMaster;
+	Print* _stm;
+	unsigned int _timeToReceive;
 
 public:
 	TcpSlave();
 	~TcpSlave();
-	void config(const char* ssid, const char* password, long baudRate);
+	void config(const char* ssid, const char* password, long baudRate, unsigned char id, Print* p = NULL);
 	void task();
 };
 

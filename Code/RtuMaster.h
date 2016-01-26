@@ -14,16 +14,20 @@
 
 #pragma once
 #include "Arduino.h"
+#include <SoftwareSerial.h>
 
 #define RTU_BUFFER_SIZE 264
 #define RtuTimeout 1000
 #define RtuRetryCount 10
+#define SlaveId 10
 
 #define READ_HOLDING_REGISTERS 3
 // modbus specific exceptions
 #define ILLEGAL_FUNCTION 1
 #define ILLEGAL_DATA_ADDRESS 2
 #define ILLEGAL_DATA_VALUE 3
+
+extern SoftwareSerial _swSer;
 
 struct Status {
 	typedef enum {
@@ -41,9 +45,6 @@ struct Status {
 	} RtuError;
 };
 
-
-
-
 class RtuMaster
 {
 	unsigned char _frame[RTU_BUFFER_SIZE];
@@ -57,7 +58,7 @@ public:
 	RtuMaster();
 	~RtuMaster();
 	void Init(long baudRate, unsigned char id);
-	void Transfer(byte MBAP[], byte* v);
+	unsigned int Transfer(byte MBAP[], byte* v);
 	Status::RtuError TransferBack(byte *frame);
 	void Read(unsigned int address, unsigned int no_of_registers);
 	Status::RtuError CheckResponse(unsigned int no_of_registers, unsigned int* register_array);

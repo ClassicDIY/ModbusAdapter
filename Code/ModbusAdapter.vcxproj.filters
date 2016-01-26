@@ -17,6 +17,7 @@
   <ItemGroup>
     <None Include="ModbusAdapter.ino" />
     <None Include="Code.licenseheader" />
+    <None Include="library.properties" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RtuMaster.cpp">
@@ -37,6 +38,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Setup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="__vm\.Code.vsarduino.h">

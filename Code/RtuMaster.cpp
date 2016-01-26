@@ -13,22 +13,18 @@
 */
 #include "RtuMaster.h"
 
-
-
 RtuMaster::RtuMaster()
 {
 	rtuError = Status::ok;
 }
 
-
 RtuMaster::~RtuMaster()
 {
 }
 
-
 void RtuMaster::Init(long baudRate, unsigned char id)
 {
-	Serial.begin(baudRate);
+	_swSer.begin(baudRate);
 
 	// Modbus states that a baud rate higher than 19200 must use a fixed 750 us 
 	// for inter character time out and 1.75 ms for a _frame delay.
@@ -52,18 +48,20 @@ void RtuMaster::Init(long baudRate, unsigned char id)
 	slaveId = id;
 }
 
-void RtuMaster::Transfer(byte MBAP[], byte* v)
+unsigned int RtuMaster::Transfer(byte MBAP[], byte* v)
 {
 	_transactionId = (MBAP[0] << 8) | MBAP[1];
-	_frame[0] = MBAP[6];
+	//_frame[0] = MBAP[6];
+	_frame[0] = SlaveId;
 	for (int i = 0; i < 6; i++) {
 		_frame[i+1] = v[i];
 	}
 	unsigned int crc16 = calculateCRC(6); // the first 6 bytes of the _frame is used in the CRC calculation
 	_frame[6] = crc16 >> 8; // crc Lo
 	_frame[7] = crc16 & 0xFF; // crc Hi
+	_swSer.flush();
 	sendPacket(8);
-	return;
+	return ((_frame[4] << 8) | _frame[5]) * T1_5; // requested length * T1-5
 }
 
 
@@ -233,9 +231,9 @@ unsigned int RtuMaster::calculateCRC(unsigned char bufferSize)
 void RtuMaster::sendPacket(unsigned char bufferSize)
 {
 	for (unsigned char i = 0; i < bufferSize; i++) {
-		Serial.write(_frame[i]);
+		_swSer.write(_frame[i]);
 	}
-	Serial.flush();
+	_swSer.flush();
 	// allow a _frame delay to indicate end of transmission
 	delayMicroseconds(T3_5);
 }
@@ -246,20 +244,20 @@ Status::RtuError RtuMaster::getData()
 	unsigned int index = 0;
 	unsigned char overflowFlag = 0;
 
-	while (Serial.available())
+	while (_swSer.available())
 	{
 		// The maximum number of bytes is limited to the serial buffer size of 128 bytes
 		// If more bytes is received than the BUFFER_SIZE the overflow flag will be set and the 
 		// serial buffer will be red untill all the data is cleared from the receive buffer,
 		// while the slave is still responding.
 		if (overflowFlag)
-			Serial.read();
+			_swSer.read();
 		else
 		{
 			if (index == RTU_BUFFER_SIZE) {
 				overflowFlag = 1;
 			}
-			_frame[index] = Serial.read();
+			_frame[index] = _swSer.read();
 			index++;
 		}
 
