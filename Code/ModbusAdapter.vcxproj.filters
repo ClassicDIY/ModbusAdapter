@@ -43,6 +43,9 @@
     <ClInclude Include="Trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NotInGit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="__vm\.Code.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
