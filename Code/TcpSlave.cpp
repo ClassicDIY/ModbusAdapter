@@ -25,10 +25,9 @@ TcpSlave::~TcpSlave()
 {
 }
 
-void TcpSlave::config(const char* ssid, const char* password, long baudRate, unsigned char id, Print* p) {
+void TcpSlave::config(long baudRate, unsigned char id, Print* p) {
 
 	_rtuMaster.Init(baudRate, 0);
-	WiFi.begin(ssid, password);
 	_server.begin();
 	_stm = p;
 	traceln(_stm, F("TcpSlave::config"));

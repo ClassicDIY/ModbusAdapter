@@ -39,7 +39,7 @@ private:
 public:
 	TcpSlave();
 	~TcpSlave();
-	void config(const char* ssid, const char* password, long baudRate, unsigned char id, Print* p = NULL);
+	void config(long baudRate, unsigned char id, Print* p = NULL);
 	void task();
 };
 
