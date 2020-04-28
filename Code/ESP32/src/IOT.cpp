@@ -9,8 +9,14 @@ DNSServer _dnsServer;
 WebServer _webServer(80);
 HTTPUpdateServer _httpUpdater;
 IotWebConf _iotWebConf(TAG, &_dnsServer, &_webServer, TAG, CONFIG_VERSION);
-//IotWebConfSeparator seperatorParam = IotWebConfSeparator("Modbus RTU");
-//IotWebConfParameter comPortParam = IotWebConfParameter("RTU COM port", "comPortParam", _comPortParam, IOTWEBCONF_WORD_LEN);
+String baudSelectOptionsHtml;
+char _modbusPort[IOTWEBCONF_WORD_LEN];
+char _rtuBaudRate[IOTWEBCONF_WORD_LEN];
+char _modbusAddress[IOTWEBCONF_WORD_LEN];
+IotWebConfSeparator seperatorParam = IotWebConfSeparator("Modbus RTU");
+IotWebConfParameter modbusPortParam = IotWebConfParameter("TCP Modbus port", "modbusPortParam", _modbusPort, IOTWEBCONF_WORD_LEN, "number", NULL, "502");
+IotWebConfParameter modbusAddressParam = IotWebConfParameter("Modbus Address", "modbusAddressParam", _modbusAddress, IOTWEBCONF_WORD_LEN, "number", NULL, "10");
+IotWebConfParameter rtuBaudRateSelectParam = IotWebConfParameter(NULL, "baudSelector", _rtuBaudRate, IOTWEBCONF_WORD_LEN, "number", "0", "19200", SELECT_BAUD, true);
 
 void WiFiEvent(WiFiEvent_t event)
 {
@@ -58,12 +64,44 @@ void handleRoot()
 	s += "</title></head><body>";
 	s += _iotWebConf.getThingName();
 	s += "<ul>";
-	s += "<li>Server: ";
-	s += "X";
+	s += "<li>Modbus port: ";
+	s += _modbusPort;
+	s += "</ul>";
+	s += "<ul>";
+	s += "<li>Modbus Address: ";
+	s += _modbusAddress;
+	s += "</ul>";
+	s += "<ul>";
+	s += "<li>RTU Baud Rate: ";
+	s += _rtuBaudRate;
 	s += "</ul>";
 	s += "Go to <a href='config'>configure page</a> to change values.";
 	s += "</body></html>\n";
 	_webServer.send(200, "text/html", s);
+}
+
+boolean formValidator()
+{
+	boolean valid = true;
+
+	String s;
+
+	s = _webServer.arg("baudSelector");
+	logd("baudSelector: %s ", s.c_str());
+
+	strcpy(_rtuBaudRate, s.c_str());
+	return valid;
+}
+
+void LoadBauds(const char *v)
+{
+	String option = BAUD_OPTION;
+	if (strcmp(_rtuBaudRate, v) == 0)
+	{
+		option = BAUD_OPTION_SELECTED;
+	}
+	option.replace("{v}", v);
+	baudSelectOptionsHtml += option;
 }
 
 void IOT::Init()
@@ -84,15 +122,19 @@ void IOT::Init()
 	}
 	WiFi.onEvent(WiFiEvent);
 	_iotWebConf.setupUpdateServer(&_httpUpdater);
-	// _iotWebConf.addParameter(&seperatorParam);
-	// _iotWebConf.addParameter(&mqttServerParam);
-
+	_iotWebConf.addParameter(&seperatorParam);
+	_iotWebConf.addParameter(&modbusPortParam);
+	_iotWebConf.addParameter(&modbusAddressParam);
+	_iotWebConf.addParameter(&rtuBaudRateSelectParam);
+	_iotWebConf.setFormValidator(&formValidator);
 	boolean validConfig = _iotWebConf.init();
 	if (!validConfig)
 	{
 		logw("!invalid configuration!");
-		// _mqttServer[0] = '\0';
 		_iotWebConf.resetWifiAuthInfo();
+		strcpy(_modbusPort, DEFAULT_PORT);
+		strcpy(_modbusAddress, DEFAULT_MODBUS_ADDRESS);
+		strcpy(_rtuBaudRate, DEFAULT_BAUD);
 	}
 	else
 	{
@@ -100,7 +142,25 @@ void IOT::Init()
 	}
 	// Set up required URL handlers on the web server.
 	_webServer.on("/", handleRoot);
-	_webServer.on("/config", [] { _iotWebConf.handleConfig(); });
+	_webServer.on("/config", [] {
+		baudSelectOptionsHtml.clear();
+		LoadBauds("600");
+		LoadBauds("1200");
+		LoadBauds("1800");
+		LoadBauds("2400");
+		LoadBauds("4800");
+		LoadBauds("9600");
+		LoadBauds("14400");
+		LoadBauds("19200");
+		LoadBauds("38400");
+		LoadBauds("57600");
+		LoadBauds("115200");
+		LoadBauds("230400");
+		String pitem = SELECT_BAUD;
+		pitem.replace("{o}", baudSelectOptionsHtml);
+		rtuBaudRateSelectParam.customHtml = pitem.c_str();
+		_iotWebConf.handleConfig();
+	});
 	_webServer.onNotFound([]() { _iotWebConf.handleNotFound(); });
 }
 
@@ -151,4 +211,18 @@ void IOT::Run()
 	}
 }
 
+int IOT::BaudRate()
+{
+	return atoi(_rtuBaudRate);
+}
+
+byte IOT::ModbusAddress()
+{
+	return atoi(_modbusAddress);
+}
+
+int IOT::TCPPort()
+{
+	return atoi(_modbusPort);
+}
 } // namespace ModbusAdapter

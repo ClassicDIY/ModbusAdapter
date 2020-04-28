@@ -4,10 +4,9 @@
 #include <WiFiServer.h>
 #include "RtuMaster.h"
 
-#define MODBUSIP_PORT 	  502
-#define MODBUSIP_MAXFRAME 200
-#define MODBUSIP_TIMEOUT   10
-#define TCP_BUFFER_SIZE 300
+#define MODBUS_DEFAULT_PORT 502
+#define MODBUSIP_MAXFRAME 256
+#define TCP_BUFFER_SIZE 1024
 
 class TcpSlave
 {
@@ -22,7 +21,8 @@ private:
 
 public:
 	TcpSlave();
-	void init(long baudRate, unsigned char id);
+	void init(long baudRate, long tcpPort, byte mosbusAddress);
+	void close();
 	void run();
 };
 

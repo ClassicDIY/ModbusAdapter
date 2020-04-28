@@ -1,16 +1,20 @@
 #include "TcpSlave.h"
 #include "Log.h"
 
-WiFiServer _server(MODBUSIP_PORT);
+WiFiServer _server(MODBUS_DEFAULT_PORT);
 
 TcpSlave::TcpSlave()
 {
 }
-void TcpSlave::init(long baudRate, unsigned char id)
+void TcpSlave::init(long baudRate, long tcpPort, byte mosbusAddress)
 {
-	_rtuMaster.Init(baudRate, id);
-	_server.begin();
-	_server.begin();
+	_rtuMaster.Init(baudRate, mosbusAddress);
+	_server.begin(tcpPort);
+}
+
+void TcpSlave::close()
+{
+	_server.close();
 }
 
 void TcpSlave::run()
@@ -31,7 +35,6 @@ void TcpSlave::run()
 		{
 			if (_client.available())
 			{
-				// logd("_client.available");
 				int i = 0;
 				while (_client.available())
 				{
@@ -42,7 +45,7 @@ void TcpSlave::run()
 				}
 				if (i != 7)
 				{
-					logd("i is = %d", i);
+					logd("Not a MODBUSIP packet i is = %d", i);
 					_len = 0;
 					return; //Not a MODBUSIP packet
 				}
@@ -51,13 +54,13 @@ void TcpSlave::run()
 
 				if (_MBAP[2] != 0 || _MBAP[3] != 0)
 				{
-					logd("Not a MODBUSIP packet");
+					logw("Not a MODBUSIP packet");
 					_len = 0;
 					return; //Not a MODBUSIP packet
 				}
 				if (_len > MODBUSIP_MAXFRAME)
 				{
-					logd("Length is over MODBUSIP_MAXFRAME: %d", _len);
+					logw("Length is over MODBUSIP_MAXFRAME: %d", _len);
 					_len = 0;
 					return; //Length is over MODBUSIP_MAXFRAME
 				}
@@ -75,17 +78,15 @@ void TcpSlave::run()
 					logd("i != _len");
 					_len = 0;
 					free(_frame);
-					logd("Not a MODBUSIP packet");
+					logw("Not a MODBUSIP packet");
 					return; //Not a MODBUSIP packet
 				}
 				_client.flush();
-				// logd("Transfer _MBAP: ");
-				// printHexString((char *)_MBAP, 7);
-				// logd("Transfer _frame: ");
-				// printHexString((char *)_frame, _len);
-				int l = (_frame[3] << 8) + _frame[4];
-				int d = (_frame[1] << 8) + _frame[2];
-				logd("Request %d from %d", l, d);
+				logd("Transfer _MBAP: ");
+				printHexString((char *)_MBAP, 7);
+				logd("Transfer _frame: ");
+				printHexString((char *)_frame, _len);
+				logi("Request %d from %d", (_frame[3] << 8) + _frame[4], (_frame[1] << 8) + _frame[2]);
 				_timeToReceive = _rtuMaster.Transfer(_MBAP, _frame);
 				_timeToReceive += micros();
 				free(_frame);
@@ -99,12 +100,13 @@ void TcpSlave::run()
 					len += 9;
 					_client.write((byte*)_sendbuffer, len);
 					_client.flush();
+					logi("Responded with %d bytes", len);
 					logd("TransferBack _frame: ");
 					printHexString((char *)_sendbuffer, len);
 				}
 				else
 				{
-					logd("RTU Error: %d", err);
+					logw("RTU Error: %d", err);
 				}
 				logd("TransferBack done");
 			}
