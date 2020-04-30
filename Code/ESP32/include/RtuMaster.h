@@ -1,66 +1,81 @@
-/* 
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
-
-		http://www.apache.org/licenses/LICENSE-2.0
-
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
-*/
-
 #pragma once
 #include "Arduino.h"
+#include "Enumerations.h"
 
 #define RTU_BUFFER_SIZE 264
 #define RtuTimeout 1000
 #define RtuRetryCount 10
+#define InterFrameDelay 2
+#define MODBUSRTU_TIMEOUT 2000
+#define MODBUSRTU_BROADCAST 0
 
-#define READ_HOLDING_REGISTERS 3
-// modbus specific exceptions
-#define ILLEGAL_FUNCTION 1
-#define ILLEGAL_DATA_ADDRESS 2
-#define ILLEGAL_DATA_VALUE 3
+namespace ModbusAdapter
+{
+typedef bool (*cbTransaction)(ResultCode res, void* data, uint16_t len); // Callback for requests
 
-struct Status {
-	typedef enum {
-		ok,
-		nothing,
-		incorrect_id_returned,
-		incorrect_function_returned,
-		incorrect_bytes_returned,
-		checksum_failed,
-		buffer_errors,
-		illegal_function,
-		illegal_data_address,
-		illegal_data_value,
-		misc_exceptions,
-	} RtuError;
+struct TAddress {
+    enum RegType {COIL, ISTS, IREG, HREG};
+    RegType type;
+    uint16_t address;
+    bool operator==(const TAddress &obj) const { // TAddress == TAddress
+	    return type == obj.type && address == obj.address;
+	}
+    TAddress& operator++() {     // ++TAddress
+        address++;
+        return *this;
+    }
+    TAddress  operator++(int) {  // TAddress++
+        TAddress result(*this);
+         ++(*this);
+        return result;
+    }
+    TAddress& operator+=(const int& inc) {  // TAddress += integer
+        address += inc;
+        return *this;
+    }
+    const TAddress operator+(const int& inc) const {    // TAddress + integer
+        TAddress result(*this);
+        result.address += inc;
+        return result;
+    }
+    bool isCoil() {
+       return type == COIL;
+    }
+    bool isIsts() {
+       return type == ISTS;
+    }
+    bool isIreg() {
+        return type == IREG;
+    }
+    bool isHreg() {
+        return type == HREG;
+    }
 };
 
 class RtuMaster
 {
-	unsigned char _frame[RTU_BUFFER_SIZE];
-	unsigned int T1_5; // inter character time out in microseconds
-	unsigned int T3_5; // frame delay in microseconds
-	byte _slaveId;
-	byte _requestUnitId;
-	unsigned int _transactionId;
-	Status::RtuError rtuError;
+
+	byte _slaveId; // unit ID sent to slave, cleared after
+	byte _unitId; // configured unit ID from setup
+	Stream* _port;
+	int16_t _rtsPin = -1;
+	uint32_t _timestamp = 0;
+	uint8_t _sentFunctionCode = 0;
+	cbTransaction _callBackFunction = nullptr;
+	unsigned int _interFrameDelay;	// inter-frame delay in mS
+	uint32_t _lastTimeStamp = 0;
+	uint16_t _len = 0;
 
 public:
 	RtuMaster();
-	void Init(long baudRate, byte mosbussAddress);
-	unsigned int Transfer(byte MBAP[], byte* v);
-	Status::RtuError TransferBack(byte *frame);
-	Status::RtuError Error() { return rtuError; }
+	void Init(long baudRate, uint8_t mosbussAddress, int16_t rtsPin = -1);
+	bool Transfer(byte* frame, cbTransaction cb);
+	void run();
 
 private:
-	unsigned int calculateCRC(unsigned char bufferSize);
-	void sendPacket(unsigned char bufferSize);
-	Status::RtuError getData();
+	uint8_t masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, void* output);
+	bool rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len);
+	bool cleanup(); 	
+	uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
 };
-
+}

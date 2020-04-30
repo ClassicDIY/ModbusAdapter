@@ -5,24 +5,21 @@
 #include "RtuMaster.h"
 
 #define MODBUS_DEFAULT_PORT 502
-#define MODBUSIP_MAXFRAME 256
-#define TCP_BUFFER_SIZE 1024
+#define MODBUSIP_MAXFRAME 250 // max 125 holding registers
 
+namespace ModbusAdapter
+{
 class TcpSlave
 {
 private:
-	byte _MBAP[7];
-	byte _sendbuffer[TCP_BUFFER_SIZE];
+	uint8_t _MBAP[7];
 	WiFiClient _client;
-	byte *_frame;
-	byte  _len;
-	unsigned int _timeToReceive;
 	RtuMaster _rtuMaster;
 
 public:
 	TcpSlave();
-	void init(long baudRate, long tcpPort, byte mosbusAddress);
+	void init(long baudRate, long tcpPort, uint8_t mosbusAddress);
 	void close();
 	void run();
 };
-
+}

@@ -216,7 +216,7 @@ int IOT::BaudRate()
 	return atoi(_rtuBaudRate);
 }
 
-byte IOT::ModbusAddress()
+uint8_t IOT::ModbusAddress()
 {
 	return atoi(_modbusAddress);
 }

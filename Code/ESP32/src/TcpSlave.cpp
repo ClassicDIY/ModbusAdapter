@@ -1,12 +1,33 @@
 #include "TcpSlave.h"
+#include "Enumerations.h"
 #include "Log.h"
+
+namespace ModbusAdapter
+{
+
+bool cbResponse(ResultCode res, void *data, uint16_t len)
+{
+	if (res != EX_SUCCESS)
+	{
+		Serial.printf_P("Request result: 0x%02X, Mem: %d\n", res, ESP.getFreeHeap());
+	}
+	else
+	{
+		//respond to TCP master
+		// _client.write((byte*)data, len);
+		// _client.flush();
+		logi("Responded with %d bytes", len);
+		printHexString((char *)data, len);
+	}
+	return true;
+}
 
 WiFiServer _server(MODBUS_DEFAULT_PORT);
 
 TcpSlave::TcpSlave()
 {
 }
-void TcpSlave::init(long baudRate, long tcpPort, byte mosbusAddress)
+void TcpSlave::init(long baudRate, long tcpPort, uint8_t mosbusAddress)
 {
 	_rtuMaster.Init(baudRate, mosbusAddress);
 	_server.begin(tcpPort);
@@ -19,8 +40,6 @@ void TcpSlave::close()
 
 void TcpSlave::run()
 {
-
-
 	if (!_client)
 	{
 		_client = _server.available();
@@ -36,6 +55,7 @@ void TcpSlave::run()
 			if (_client.available())
 			{
 				int i = 0;
+				uint8_t  len;
 				while (_client.available())
 				{
 					_MBAP[i] = _client.read();
@@ -46,73 +66,56 @@ void TcpSlave::run()
 				if (i != 7)
 				{
 					logd("Not a MODBUSIP packet i is = %d", i);
-					_len = 0;
+					len = 0;
 					return; //Not a MODBUSIP packet
 				}
-				_len = _MBAP[4] << 8 | _MBAP[5];
-				_len--; // Do not count with last byte from MBAP
+				len = _MBAP[4] << 8 | _MBAP[5];
+				len--; // Do not count with last byte from MBAP
 
 				if (_MBAP[2] != 0 || _MBAP[3] != 0)
 				{
 					logw("Not a MODBUSIP packet");
-					_len = 0;
+					len = 0;
 					return; //Not a MODBUSIP packet
 				}
-				if (_len > MODBUSIP_MAXFRAME)
+				if (len > MODBUSIP_MAXFRAME)
 				{
-					logw("Length is over MODBUSIP_MAXFRAME: %d", _len);
-					_len = 0;
+					logw("Length is over MODBUSIP_MAXFRAME: %d", len);
+					len = 0;
 					return; //Length is over MODBUSIP_MAXFRAME
 				}
-				_frame = (byte *)malloc(_len);
+				uint8_t *frame = (byte *)malloc(len);
 				i = 0;
 				while (_client.available())
 				{
-					_frame[i] = _client.read();
+					frame[i] = _client.read();
 					i++;
-					if (i == _len)
+					if (i == len)
 						break;
 				}
-				if (i != _len)
+				if (i != len)
 				{
 					logd("i != _len");
-					_len = 0;
-					free(_frame);
+					len = 0;
+					free(frame);
 					logw("Not a MODBUSIP packet");
 					return; //Not a MODBUSIP packet
 				}
 				_client.flush();
-				logd("Transfer _MBAP: ");
+				logd("TCP _MBAP: ");
 				printHexString((char *)_MBAP, 7);
-				logd("Transfer _frame: ");
-				printHexString((char *)_frame, _len);
-				logi("Request %d from %d", (_frame[3] << 8) + _frame[4], (_frame[1] << 8) + _frame[2]);
-				_timeToReceive = _rtuMaster.Transfer(_MBAP, _frame);
-				_timeToReceive += micros();
-				free(_frame);
-				_len = 0;
+				logd("TCP _frame: ");
+				printHexString((char *)frame, len);
+				bool res = _rtuMaster.Transfer(frame, cbResponse);
+				logd("RTU Transfer: %s", res ? "Ok" : "Failed");
+				free(frame);
+				len = 0;
 			}
-			else if (micros() < _timeToReceive)
-			{
-				Status::RtuError err = _rtuMaster.TransferBack(_sendbuffer);
-				if (err == Status::ok) {
-					long unsigned int len = _sendbuffer[8];
-					len += 9;
-					_client.write((byte*)_sendbuffer, len);
-					_client.flush();
-					logi("Responded with %d bytes", len);
-					logd("TransferBack _frame: ");
-					printHexString((char *)_sendbuffer, len);
-				}
-				else
-				{
-					logw("RTU Error: %d", err);
-				}
-				logd("TransferBack done");
-			}
+			_rtuMaster.run();
 		}
 		else {
 			_client.stop();
 		}
 	}
+}
 }

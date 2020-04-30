@@ -26,7 +26,7 @@ public:
     void Run();
     int BaudRate();
     int TCPPort();
-    byte ModbusAddress();
+    uint8_t ModbusAddress();
 
 private:
 

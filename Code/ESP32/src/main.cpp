@@ -9,6 +9,7 @@ using namespace ModbusAdapter;
 
 IOT _iot = IOT();
 TcpSlave _tcpSlave;
+RtuMaster _rtuMaster;
 boolean _slaveConnected = false;
 
 void WiFiEvent(WiFiEvent_t event)
@@ -42,7 +43,6 @@ void setup()
 
 void loop()
 {
-		
 	_iot.Run();
 	if (_slaveConnected)
 	{

@@ -1,5 +1,7 @@
 #include <IotWebConf.h>
 
+namespace ModbusAdapter
+{
 const char CUSTOMHTML_SCRIPT_INNER[] PROGMEM = "\n\
 function mySelect(selectObject) {\n\
   var value = selectObject.value; \n\
@@ -23,3 +25,4 @@ protected:
       String(FPSTR(CUSTOMHTML_SCRIPT_INNER));
   }
 };
+}
