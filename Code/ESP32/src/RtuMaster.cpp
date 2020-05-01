@@ -2,6 +2,7 @@
 #include "RtuMaster.h"
 #include "Enumerations.h"
 #include "Log.h"
+#include "TcpSlave.h"
 
 namespace ModbusAdapter
 {
@@ -31,7 +32,7 @@ RtuMaster::RtuMaster()
 {
 }
 
-void RtuMaster::Init(long baudRate, uint8_t modbusAddress, int16_t rtsPin)
+void RtuMaster::Init(long baudRate, uint8_t modbusAddress)
 {
 	Serial1.begin(baudRate, SERIAL_8N1, GPIO_NUM_16, GPIO_NUM_17, false); // Modbus connection
 	while (!Serial1)
@@ -40,7 +41,7 @@ void RtuMaster::Init(long baudRate, uint8_t modbusAddress, int16_t rtsPin)
 	}
 	_port = &Serial1;
 	_unitId = modbusAddress;
-	_rtsPin = rtsPin;
+	_rtsPin = GPIO_NUM_5;
 	if (_rtsPin >= 0) {
         pinMode(_rtsPin, OUTPUT);
         digitalWrite(_rtsPin, LOW);
@@ -52,15 +53,17 @@ void RtuMaster::Init(long baudRate, uint8_t modbusAddress, int16_t rtsPin)
     }
 }
 
-bool RtuMaster::Transfer(byte* frame, cbTransaction cb)
+bool RtuMaster::Transfer(byte* frame, uint16_t len, void* cb)
 {
 	if (_slaveId) return false; // Break if waiting for previous request result
 	_slaveId = _unitId;
 	_sentFunctionCode = frame[0];
-	rawSend(_slaveId, frame, 5);
+	rawSend(_slaveId, frame, len);
 	_timestamp = millis();
 	_callBackFunction = cb;
 	_len = 0;
+    // logd("RTU Transfer id: %d, len: %d", _slaveId, len);
+    // printHexString(frame, len);
 	return true;
 }
 
@@ -76,24 +79,27 @@ void RtuMaster::run()
         return;  
     }
     if (millis() - _lastTimeStamp < _interFrameDelay) return;  // Wait data whitespace
-    uint8_t address = 0;
+    uint8_t address = _port->read(); //first byte of frame = address
+    _len--; // Decrease by slaveId byte
+    if (_len == 0) {
+        return;
+    }
     if (_slaveId == 0) {    // Check if slaveId is set
         for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if is not expected
         _len = 0;
-		logw("slaveId not set");
         return;
     }
-    else
-    {
-        uint8_t address = _port->read(); //first byte of frame = address
-        _len--; // Decrease by slaveId byte
-    }
-    
-    if (address != MODBUSRTU_BROADCAST && address != _slaveId) {     // SlaveId Check
-        for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if SlaveId doesn't mach
-        _len = 0;
-		logw("Invalid slaveId");
-        return;
+    if (address != _slaveId) {     // SlaveId Check
+        while (_len != 0) {
+            address = _port->read(); // filter out non-modbus crap
+            _len--;
+            if (address == _slaveId) {
+                break;
+            }
+        }
+        if (_len == 0) {
+            return;
+        }
     }
 	uint8_t* frame = (uint8_t*) malloc(_len);
     if (!frame) {  // Fail to allocate buffer
@@ -108,8 +114,8 @@ void RtuMaster::run()
     _len = _len - 2;    // Decrease by CRC 2 bytes
 	uint16_t crc = crc16(address, frame, _len);
     if (frameCrc != crc) {  // CRC Check
-		logw("wrong crc for %d: [0x%x, 0x%x] len %d", address, frameCrc, crc, _len);
-		printHexString((char *)frame, _len);
+		// logw("wrong crc for %d: [0x%x, 0x%x] len %d", address, frameCrc, crc, _len);
+		// printHexString(frame, _len);
         free(frame);
         frame = nullptr;
 		_len = 0;   // Cleanup if wrong crc
@@ -118,7 +124,8 @@ void RtuMaster::run()
     }
 	if ((frame[0] & 0x7F) == _sentFunctionCode) { // Check if function code the same as requested
 		if (_callBackFunction) {
-			_callBackFunction(EX_SUCCESS, frame, _len);
+            TcpSlave* p =(TcpSlave*) _callBackFunction;
+			p->cbResponse(EX_SUCCESS, frame, _len);
 		}
 		_slaveId = 0;
 	}
@@ -160,11 +167,18 @@ bool RtuMaster::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 
 bool RtuMaster::cleanup() {
 	if (_slaveId && ((millis() - _timestamp) > MODBUSRTU_TIMEOUT)) {
-		if (_callBackFunction)
-			_callBackFunction(EX_TIMEOUT, nullptr, 0);
+        if (_callBackFunction) {
+            TcpSlave* p =(TcpSlave*) _callBackFunction;
+			p->cbResponse(EX_TIMEOUT, nullptr, 0);
+		}
 		_slaveId = 0;
         return true;
 	}
     return false;
+}
+
+void RtuMaster::reset() {
+	_slaveId = 0;
+    return;
 }
 }

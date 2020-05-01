@@ -3,7 +3,7 @@
 #include "esp_log.h"
 #define TAG "ModbusAdapter"
 
-void inline printHexString(char* ptr, int len)
+void inline printHexString(byte* ptr, int len)
 {
 #if APP_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_DEBUG
 	esp_log_level_set(TAG, ESP_LOG_DEBUG);
