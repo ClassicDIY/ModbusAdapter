@@ -63,6 +63,9 @@ void handleRoot()
 	s += _iotWebConf.getThingName();
 	s += "</title></head><body>";
 	s += _iotWebConf.getThingName();
+	s += " (Free Memory: ";
+	s += ESP.getFreeHeap();
+	s += ")";
 	s += "<ul>";
 	s += "<li>Modbus port: ";
 	s += _modbusPort;

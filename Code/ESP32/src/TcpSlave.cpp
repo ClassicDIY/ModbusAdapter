@@ -36,19 +36,43 @@ void TcpSlave::cbResponse(ResultCode res, void *data, uint16_t len)
 	}
 	else
 	{
-		//respond to TCP master
-		// uint16_t ll = len +2;
-		// _MBAP[4] = ll >> 8;
-		// _MBAP[5] = ll & 0xff;
-		// _MBAP[6] = 0x01;
-		// uint8_t _buf[MODBUSIP_MAXFRAME];
-		// memcpy(_buf,_MBAP, 7);
-		// memcpy(&(_buf[7]),data, len);
-		// // _client.write((byte*)_MBAP, 7);
-		// _client.clearWriteError();
-		// _client.write((byte*)_buf, len+7);
-		// _client.flush();
-
+		Transaction *trans = searchTransaction(_frame);
+		if (trans)
+		{
+			uint8_t *mem = (uint8_t *)malloc(len);
+			if (mem)
+			{
+				free(trans->_responseFrame);
+				trans->_responseFrame = mem;
+				memcpy(trans->_responseFrame, data, len);
+				trans->_responseFrameLen = len;
+				trans->timestamp = millis();
+			}
+		}
+		else
+		{
+			Transaction newEntry;
+			newEntry.timestamp = millis();
+			uint8_t *memReq = (uint8_t *)malloc(_len);
+			if (memReq)
+			{
+				newEntry._requestFrame = memReq;
+				memcpy(newEntry._requestFrame, _frame, _len);
+				newEntry._requestFrameLen = _len;
+				uint8_t *memResp = (uint8_t *)malloc(len);
+				if (memResp)
+				{
+					newEntry._responseFrame = memResp;
+					memcpy(newEntry._responseFrame, data, len);
+					newEntry._responseFrameLen = len;
+					_trans.push_back(newEntry);
+				}
+				else
+				{
+					free(memReq);
+				}
+			}
+		}
 		free(_frame);
 		_len = len;
 		_frame = (uint8_t *)malloc(len);
@@ -129,11 +153,30 @@ void TcpSlave::run()
 					{
 						if (_pClients[_clientIndex]->localPort() == _slavePort)
 						{
+							if (!SupportedFunction(_frame[0])) {
+								exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_FUNCTION);
+							}
 							// forward incoming frame to RTU master
-							if (_rtuMaster.Transfer(_frame, _len, this) == false)
+							else if (_rtuMaster.Transfer(_frame, _len, this) == false)
 							{
-								exceptionResponse((FunctionCode)_frame[0], EX_SLAVE_DEVICE_BUSY);
-								_rtuState = RTU_IDLE;
+								Transaction *trans = searchTransaction(_frame);
+								if (trans)
+								{
+									uint8_t *mem = (uint8_t *)malloc(trans->_responseFrameLen);
+									if (mem)
+									{
+										_len = trans->_responseFrameLen;
+										free(_frame);
+										_frame = mem;
+										memcpy(_frame, trans->_responseFrame, _len);
+										_rtuState = RTU_COMPLETE;
+									}
+								}
+								else
+								{
+									exceptionResponse((FunctionCode)_frame[0], EX_DEVICE_FAILED_TO_RESPOND);
+									_rtuState = RTU_IDLE;
+								}
 							}
 							else
 							{
@@ -145,9 +188,25 @@ void TcpSlave::run()
 								}
 								if (_rtuState != RTU_COMPLETE)
 								{ // did not complete?
-									exceptionResponse((FunctionCode)_frame[0], _rtuState == RTU_FAILED ? EX_GENERAL_FAILURE : EX_TIMEOUT);
-									_rtuState = RTU_IDLE;
-									_rtuMaster.reset();
+									Transaction *trans = searchTransaction(_frame);
+									if (trans)
+									{
+										uint8_t *mem = (uint8_t *)malloc(trans->_responseFrameLen);
+										if (mem)
+										{
+											_len = trans->_responseFrameLen;
+											free(_frame);
+											_frame = mem;
+											memcpy(_frame, trans->_responseFrame, _len);
+											_rtuState = RTU_COMPLETE;
+										}
+									}
+									else
+									{
+										exceptionResponse((FunctionCode)_frame[0], _rtuState == RTU_FAILED ? EX_GENERAL_FAILURE : EX_DATA_MISMACH);
+										_rtuState = RTU_IDLE;
+										_rtuMaster.reset();
+									}
 								}
 							}
 						}
@@ -204,5 +263,40 @@ void TcpSlave::cleanup()
 			_pClients[i] = nullptr;
 		}
 	}
+	// remove old transactions
+	for (auto it = _trans.begin(); it != _trans.end();)
+	{
+		if (millis() - it->timestamp > TRANSACTION_LIFESPAN)
+		{
+			free(it->_requestFrame);
+			free(it->_responseFrame);
+			it = _trans.erase(it);
+		}
+		else
+			it++;
+	}
+}
+Transaction *TcpSlave::searchTransaction(uint8_t *frame)
+{
+	std::vector<Transaction>::iterator it = std::find_if(_trans.begin(), _trans.end(), [frame](Transaction &trans) { return memcmp(trans._requestFrame, frame, trans._requestFrameLen) == 0; });
+	if (it != _trans.end())
+		return &*it;
+	return nullptr;
+}
+
+boolean TcpSlave::SupportedFunction(uint8_t fcode) {
+	bool rVal = false;
+	    switch (fcode) {
+        case FC_READ_REGS:
+        case FC_READ_COILS:
+        case FC_READ_INPUT_STAT:
+        case FC_READ_INPUT_REGS:
+			rVal = true;
+        break;
+
+        default:
+			rVal = false;
+    }
+	return rVal;
 }
 } // namespace ModbusAdapter
