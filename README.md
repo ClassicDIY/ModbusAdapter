@@ -25,3 +25,13 @@ Gnd | Gnd |
 <p align="center">
   <img src="./Pictures/CableClassic.png" width="800"/>
 </p>
+
+<p align="center">
+  <img src="./Pictures/home.png" width="320"/>
+</p>
+
+ ### Use admin/ModbusAdapter to access setup
+ 
+<p align="center">
+  <img src="./Pictures/Setup.png" width="320"/>
+</p>
