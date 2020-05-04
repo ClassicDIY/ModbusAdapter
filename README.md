@@ -2,7 +2,7 @@
 <h2>Adds Modbus TCP over WIFI to a Modbus RTU Serial device</h2>
 <p>
 
-|If you find this project useful or interesting, please help support further development!|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DCRNTR49P59T2&currency_code=CAD&source=url)|
+|If you find this project useful or interesting, please help support further development!|<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DCRNTR49P59T2&currency_code=CAD&source=url" target="_blank"><img border="0" alt="paypal" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" width="80" height="25"></a>|
 |---|---|
 
 [![GitHub tag (latest SemVer pre-release)](https://img.shields.io/github/v/tag/ClassicDIY/ModbusAdapter?include_prereleases&label=Pre-Release&style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/releases)
