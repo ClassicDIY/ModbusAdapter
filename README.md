@@ -1,5 +1,5 @@
 <h1>ModbusAdapter</h1>
-<h2>Adds Modbus TCP over WIFI to an RTU RS232 device</h2>
+<h2>Adds Modbus TCP over WIFI to a Modbus RTU Serial device</h2>
 <p>
 
 |If you find this project useful or interesting, please help support further development!|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=DCRNTR49P59T2&currency_code=CAD&source=url)|
