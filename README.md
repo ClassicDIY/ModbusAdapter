@@ -40,15 +40,16 @@ Gnd | Gnd |
 </p>
 
 <h2>ModbusAdapter configure page</h2>
- ### Use admin/ModbusAdapter to access setup
+ *** Use admin/ModbusAdapter to access setup
  
 <p align="center">
   <img src="./Pictures/Setup.png" width="320"/>
 </p>
 
- ### Use the ClassicMonitor android app
+ ### Use the ClassicMonitor android app to view your data
  
- <h4>Connect to the ModbusAdapter IP Address</h4>
+ *** Connect to the ModbusAdapter IP Address
+ 
 <a href='https://play.google.com/store/apps/details?id=ca.farrelltonsolar.classic&hl=en&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width=200/></a>
 
 <img src="http://ClassicDIY.github.io/Classic/classicmonitor/images_en/StateOfCharge_landscape.png" width="600"/>
