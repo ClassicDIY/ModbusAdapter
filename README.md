@@ -14,7 +14,7 @@
 |---|---|
 |<a href="https://www.canakit.com/rs232-interface-module-ck1007-uk1007.html"> RS232 Interface Module </a>|<img src="./Pictures/RS232.jpg" width="120"/>|
 
-<h2>Wiring</h2>
+<h2>Wiring diagram</h2>
 
 RS232 Interface Module | ESP32 |
 --- | --- |
@@ -27,14 +27,19 @@ Gnd | Gnd |
   <img src="./Pictures/Wiring.png" width="800"/>
 </p>
 
+<h2>RJ11 to male DE-9 connector Cable</h2>
+
 <p align="center">
   <img src="./Pictures/CableClassic.png" width="800"/>
 </p>
+
+<h2>ModbusAdapter home page</h2>
 
 <p align="center">
   <img src="./Pictures/home.png" width="320"/>
 </p>
 
+<h2>ModbusAdapter configure page</h2>
  ### Use admin/ModbusAdapter to access setup
  
 <p align="center">
