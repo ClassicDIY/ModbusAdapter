@@ -23,5 +23,5 @@ Gnd | Gnd |
 </p>
 
 <p align="center">
-  <img src="./Pictures/cable.jpg" width="600"/>
+  <img src="./Pictures/CableClassic.png" width="800"/>
 </p>
