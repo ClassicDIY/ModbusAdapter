@@ -9,14 +9,14 @@
 [![GitHub issues](https://img.shields.io/github/issues/ClassicDIY/ModbusAdapter?style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/issues)
 
 <p>
-Please refer to the <a href="https://github.com/ClassicDIY/ModbusAdapter/wiki">ModbusAdapter wiki</a> for more information.
+Please refer to the <a href="https://github.com/ClassicDIY/ModbusAdapter/wiki" target="_blank">ModbusAdapter wiki</a> for more information.
 </p>
 
 <h2>Parts</h2>
 
-|<a href="https://www.aliexpress.com/item/32826540261.html?src=google&src=google&albch=shopping&acnt=494-037-6276&isdl=y&slnk=&plac=&mtctp=&albbt=Google_7_shopping&aff_platform=google&aff_short_key=UneMJZVf&&albagn=888888&albcp=7386552844&albag=80241711349&trgt=743612850714&crea=en32826540261&netw=u&device=c&albpg=743612850714&albpd=en32826540261&gclid=Cj0KCQjw-r71BRDuARIsAB7i_QMqV6A_E4zdDcSiXs2j3qIUm4cIgdCFfkDs1Egmak4QgCXrvfcQXAkaAu2WEALw_wcB&gclsrc=aw.ds"> ESP32 Dev Module</a>|<img src="./Pictures/esp32.jpg" width="120"/>|
+|<a href="https://www.aliexpress.com/item/32826540261.html?src=google&src=google&albch=shopping&acnt=494-037-6276&isdl=y&slnk=&plac=&mtctp=&albbt=Google_7_shopping&aff_platform=google&aff_short_key=UneMJZVf&&albagn=888888&albcp=7386552844&albag=80241711349&trgt=743612850714&crea=en32826540261&netw=u&device=c&albpg=743612850714&albpd=en32826540261&gclid=Cj0KCQjw-r71BRDuARIsAB7i_QMqV6A_E4zdDcSiXs2j3qIUm4cIgdCFfkDs1Egmak4QgCXrvfcQXAkaAu2WEALw_wcB&gclsrc=aw.ds"  target="_blank"> ESP32 Dev Module</a>|<img src="./Pictures/esp32.jpg" width="120"/>|
 |---|---|
-|<a href="https://www.canakit.com/rs232-interface-module-ck1007-uk1007.html"> RS232 Interface Module </a>|<img src="./Pictures/RS232.jpg" width="120"/>|
+|<a href="https://www.canakit.com/rs232-interface-module-ck1007-uk1007.html"  target="_blank"> RS232 Interface Module </a>|<img src="./Pictures/RS232.jpg" width="120"/>|
 
 <h2>Wiring diagram</h2>
 
