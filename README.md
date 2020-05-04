@@ -1,10 +1,13 @@
+
 <h1>ModbusAdapter</h1>
 <h2>Adds Modbus TCP over WIFI to a Modbus RTU Serial device</h2>
 <p>
+  
+|If you find this project useful or interesting, please help support further development!|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate/?token=ujPa7RERQZhNZKCdWB_BCvQi7Wv43j7ZffsEqVqdVUcGQcbNZ0Ov1Dy-ZhgALX8rstQBZW&country.x=US&locale.x=)|
+|---|---|
 
 [![GitHub tag (latest SemVer pre-release)](https://img.shields.io/github/v/tag/ClassicDIY/ModbusAdapter?include_prereleases&label=Pre-Release&style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/releases)
 [![GitHub issues](https://img.shields.io/github/issues/ClassicDIY/ModbusAdapter?style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/issues)
-[![https://www.buymeacoffee.com/r4K2HIB](https://img.shields.io/badge/Donate-Buy%20Me%20a%20coffee-orange?style=for-the-badge)](https://www.buymeacoffee.com/r4K2HIB)
 
 <p>
 Please refer to the <a href="https://github.com/ClassicDIY/ModbusAdapter/wiki">ModbusAdapter wiki</a> for more information.
