@@ -6,6 +6,7 @@
 |If you find this project useful or interesting, please help support further development!|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate/?token=ujPa7RERQZhNZKCdWB_BCvQi7Wv43j7ZffsEqVqdVUcGQcbNZ0Ov1Dy-ZhgALX8rstQBZW&country.x=US&locale.x=)|
 |---|---|
 
+[![GitHub All Releases](https://img.shields.io/github/downloads/ClassicDIY/ModbusAdapter/total.svg?style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/releases)
 [![GitHub tag (latest SemVer pre-release)](https://img.shields.io/github/v/tag/ClassicDIY/ModbusAdapter?include_prereleases&label=Pre-Release&style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/releases)
 [![GitHub issues](https://img.shields.io/github/issues/ClassicDIY/ModbusAdapter?style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/issues)
 
