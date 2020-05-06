@@ -20,7 +20,7 @@ void TcpSlave::init(long baudRate, long tcpPort, uint8_t mosbusAddress)
 	_rtuMaster.Init(baudRate, mosbusAddress);
 	_pServer = new WiFiServer(tcpPort);
 	_pServer->begin();
-	_rtuState = RTU_IDLE;
+	_rtuResultCode = EX_SLAVE_FAILURE;
 }
 
 void TcpSlave::close()
@@ -28,24 +28,21 @@ void TcpSlave::close()
 	_pServer->close();
 }
 
-void TcpSlave::cbResponse(ResultCode res, void *data, uint16_t len)
+void TcpSlave::cbResponse(ResultCode res, uint8_t* requestFrame, uint8_t requestFrameLen, uint8_t *responseFrame, uint16_t responseFrameLen)
 {
-	if (res != EX_SUCCESS)
+	_rtuResultCode= res;
+	if (res == EX_SUCCESS)
 	{
-		_rtuState = RTU_FAILED;
-	}
-	else
-	{
-		Transaction *trans = searchTransaction(_frame);
+		Transaction *trans = searchTransaction(requestFrame);
 		if (trans)
 		{
-			uint8_t *mem = (uint8_t *)malloc(len);
+			uint8_t *mem = (uint8_t *)malloc(responseFrameLen);
 			if (mem)
 			{
 				free(trans->_responseFrame);
 				trans->_responseFrame = mem;
-				memcpy(trans->_responseFrame, data, len);
-				trans->_responseFrameLen = len;
+				memcpy(trans->_responseFrame, responseFrame, responseFrameLen);
+				trans->_responseFrameLen = responseFrameLen;
 				trans->timestamp = millis();
 			}
 		}
@@ -53,18 +50,18 @@ void TcpSlave::cbResponse(ResultCode res, void *data, uint16_t len)
 		{
 			Transaction newEntry;
 			newEntry.timestamp = millis();
-			uint8_t *memReq = (uint8_t *)malloc(_len);
+			uint8_t *memReq = (uint8_t *)malloc(requestFrameLen);
 			if (memReq)
 			{
 				newEntry._requestFrame = memReq;
-				memcpy(newEntry._requestFrame, _frame, _len);
-				newEntry._requestFrameLen = _len;
-				uint8_t *memResp = (uint8_t *)malloc(len);
+				memcpy(newEntry._requestFrame, requestFrame, requestFrameLen);
+				newEntry._requestFrameLen = requestFrameLen;
+				uint8_t *memResp = (uint8_t *)malloc(responseFrameLen);
 				if (memResp)
 				{
 					newEntry._responseFrame = memResp;
-					memcpy(newEntry._responseFrame, data, len);
-					newEntry._responseFrameLen = len;
+					memcpy(newEntry._responseFrame, responseFrame, responseFrameLen);
+					newEntry._responseFrameLen = responseFrameLen;
 					_trans.push_back(newEntry);
 				}
 				else
@@ -73,16 +70,6 @@ void TcpSlave::cbResponse(ResultCode res, void *data, uint16_t len)
 				}
 			}
 		}
-		free(_frame);
-		_len = len;
-		_frame = (uint8_t *)malloc(len);
-		if (!_frame)
-		{
-			_rtuState = RTU_FAILED;
-			return;
-		}
-		memcpy(_frame, data, len);
-		_rtuState = RTU_COMPLETE;
 	}
 	return;
 }
@@ -157,57 +144,23 @@ void TcpSlave::run()
 								exceptionResponse((FunctionCode)_frame[0], EX_ILLEGAL_FUNCTION);
 							}
 							// forward incoming frame to RTU master
-							else if (_rtuMaster.Transfer(_frame, _len, this) == false)
+							_rtuMaster.Transfer(_frame, _len, this);
+							_rtuMaster.Run(); // read RTU responses
+							Transaction *trans = searchTransaction(_frame);
+							if (trans)
 							{
-								Transaction *trans = searchTransaction(_frame);
-								if (trans)
+								uint8_t *mem = (uint8_t *)malloc(trans->_responseFrameLen);
+								if (mem)
 								{
-									uint8_t *mem = (uint8_t *)malloc(trans->_responseFrameLen);
-									if (mem)
-									{
-										_len = trans->_responseFrameLen;
-										free(_frame);
-										_frame = mem;
-										memcpy(_frame, trans->_responseFrame, _len);
-										_rtuState = RTU_COMPLETE;
-									}
-								}
-								else
-								{
-									exceptionResponse((FunctionCode)_frame[0], EX_DEVICE_FAILED_TO_RESPOND);
-									_rtuState = RTU_IDLE;
+									_len = trans->_responseFrameLen;
+									free(_frame);
+									_frame = mem;
+									memcpy(_frame, trans->_responseFrame, _len);
 								}
 							}
 							else
 							{
-								_rtuState = RTU_PENDING;
-								uint32_t transferStart = millis();
-								while (millis() - transferStart < MODBUSIP_MAX_RESPMS && _rtuState == RTU_PENDING)
-								{
-									_rtuMaster.run();
-								}
-								if (_rtuState != RTU_COMPLETE)
-								{ // did not complete?
-									Transaction *trans = searchTransaction(_frame);
-									if (trans)
-									{
-										uint8_t *mem = (uint8_t *)malloc(trans->_responseFrameLen);
-										if (mem)
-										{
-											_len = trans->_responseFrameLen;
-											free(_frame);
-											_frame = mem;
-											memcpy(_frame, trans->_responseFrame, _len);
-											_rtuState = RTU_COMPLETE;
-										}
-									}
-									else
-									{
-										exceptionResponse((FunctionCode)_frame[0], _rtuState == RTU_FAILED ? EX_GENERAL_FAILURE : EX_DATA_MISMACH);
-										_rtuState = RTU_IDLE;
-										_rtuMaster.reset();
-									}
-								}
+								exceptionResponse((FunctionCode)_frame[0], EX_TIMEOUT);
 							}
 						}
 					}
@@ -222,6 +175,7 @@ void TcpSlave::run()
 				memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 				_pClients[_clientIndex]->write(sbuf, send_len);
 				_pClients[_clientIndex]->flush();
+				
 			}
 			if (_frame)
 			{
@@ -232,7 +186,7 @@ void TcpSlave::run()
 		}
 	}
 	_clientIndex = -1;
-	_rtuMaster.run(); // read crap
+
 }
 
 void TcpSlave::exceptionResponse(FunctionCode fn, ResultCode excode)

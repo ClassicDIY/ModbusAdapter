@@ -37,11 +37,4 @@ enum ResultCode {
     EX_CANCEL               = 0xE6  // Custom. Transaction/request canceled
 };
 
-enum RtuReplyState {
-    RTU_IDLE            = 0x01,
-    RTU_PENDING           = 0x02,
-    RTU_COMPLETE        = 0x03,
-    RTU_FAILED        = 0x04
-};
-
 }

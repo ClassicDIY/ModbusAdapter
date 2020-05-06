@@ -39,11 +39,11 @@ class TcpSlave
 	uint8_t*  _frame = nullptr;
 	uint16_t  _len = 0;
 	RtuMaster _rtuMaster;
+	ResultCode _rtuResultCode;
 	int8_t _clientIndex = -1;
 	uint16_t _slavePort = 0;
 	WiFiServer* _pServer;
 	WiFiClient* _pClients[MODBUSIP_MAX_CLIENTS];
-	RtuReplyState _rtuState;
 	void cleanup();
 	int8_t getFreeClient();
 	void exceptionResponse(FunctionCode fn, ResultCode excode);
@@ -52,7 +52,7 @@ class TcpSlave
 
 public:
 	TcpSlave();
-	void cbResponse(ResultCode res, void *data, uint16_t len);
+	void cbResponse(ResultCode res, uint8_t* requestFrame, uint8_t requestFrameLen, uint8_t *data, uint16_t len);
 	void init(long baudRate, long tcpPort, uint8_t mosbusAddress);
 	void close();
 	void run();
