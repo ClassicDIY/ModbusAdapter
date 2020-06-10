@@ -160,7 +160,7 @@ namespace ModbusAdapter
 									}
 									else
 									{
-										exceptionResponse((FunctionCode)_frame[0], EX_GENERAL_FAILURE);
+										exceptionResponse((FunctionCode)_frame[0], EX_TIMEOUT);
 									}
 								}
 							}
