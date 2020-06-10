@@ -93,7 +93,9 @@ void RtuMaster::Run()
     uint32_t u32StartTime;
     uint8_t u8BytesLeft = 8;
     ResultCode u8MBStatus = EX_SUCCESS;
-
+    bool meiFunctionCodeReceived = false;
+    uint8_t numberOfMEIObject = 0;
+    uint8_t meiObjectLengthOffset = 0;
     u32StartTime = millis();
     while (u8BytesLeft && !u8MBStatus)
     {
@@ -131,12 +133,30 @@ void RtuMaster::Run()
             case FC_READ_INPUT_STAT:
             case FC_READ_REGS:
             case FC_READ_INPUT_REGS:
+                meiFunctionCodeReceived = false;
                 u8BytesLeft = u8ModbusADU[2];
+                break;
+            case FC_MEI:
+                meiFunctionCodeReceived = true;
+                u8BytesLeft = 3; // get up to number of objects
                 break;
 
             default:
                 u8MBStatus = EX_ILLEGAL_FUNCTION;
                 break;
+            }
+        }
+        else if (meiFunctionCodeReceived) {
+            if (u8ModbusADUSize == 8) {
+                numberOfMEIObject = u8ModbusADU[7];
+                u8BytesLeft = 2;
+                meiObjectLengthOffset = 9;
+            }
+            if (numberOfMEIObject > 0 && u8ModbusADUSize == (meiObjectLengthOffset+1)) {
+                u8BytesLeft = u8ModbusADU[meiObjectLengthOffset] + 2;
+                meiObjectLengthOffset += u8ModbusADU[meiObjectLengthOffset];
+                meiObjectLengthOffset += 2;
+                numberOfMEIObject--;
             }
         }
         if ((millis() - u32StartTime) > MODBUSRTU_TIMEOUT)

@@ -15,7 +15,8 @@ enum FunctionCode {
     FC_READ_FILE_REC    = 0x14, // Not implemented. Read File Record
     FC_WRITE_FILE_REC   = 0x15, // Not implemented. Write File Record
     FC_MASKWRITE_REG    = 0x16, // Not implemented. Mask Write Register
-    FC_READWRITE_REGS   = 0x17  // Not implemented. Read/Write Multiple registers
+    FC_READWRITE_REGS   = 0x17,  // Not implemented. Read/Write Multiple registers
+    FC_MEI              = 0x2B  // Encapsulated Interface
 };
 
 enum ResultCode {
