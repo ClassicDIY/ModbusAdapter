@@ -6,6 +6,8 @@
 |If you find this project useful or interesting, please help support further development!|[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=graham.a.ross%40gmail.com&item_name=Support+ModbusAdapter+development&currency_code=USD&source=url)|
 |---|---|
 
+[![HitCount](http://hits.dwyl.com/ClassicDIY/ModbusAdapter.svg)](http://hits.dwyl.com/ClassicDIY/ModbusAdapter)
+
 [![GitHub All Releases](https://img.shields.io/github/downloads/ClassicDIY/ModbusAdapter/total.svg?style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/releases)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ClassicDIY/ModbusAdapter.svg?style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/releases)
 [![GitHub issues](https://img.shields.io/github/issues/ClassicDIY/ModbusAdapter?style=for-the-badge)](https://github.com/ClassicDIY/ModbusAdapter/issues)
