@@ -31,9 +31,10 @@ RtuMaster::RtuMaster()
 {
 }
 
-void RtuMaster::Init(long baudRate, uint8_t modbusAddress)
+void RtuMaster::Init(long baudRate, uint32_t config, uint8_t modbusAddress)
 {
-    Serial1.begin(baudRate, SERIAL_8N1, GPIO_NUM_16, GPIO_NUM_17, false); // Modbus connection
+    logi("Setting serial 1 to %d baud 0x%04X config", baudRate, config);
+    Serial1.begin(baudRate, config, GPIO_NUM_16, GPIO_NUM_17, false); // Modbus connection
     while (!Serial1)
     {
         ; // wait for serial port to connect.

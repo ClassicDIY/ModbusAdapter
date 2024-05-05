@@ -17,7 +17,7 @@ void WiFiEvent(WiFiEvent_t event)
 	switch (event)
 	{
 	case SYSTEM_EVENT_STA_GOT_IP:
-		_tcpSlave.init(_iot.BaudRate(), _iot.TCPPort(), _iot.ModbusAddress());
+		_tcpSlave.init(_iot.BaudRate(), _iot.SerialConfig(), _iot.TCPPort(), _iot.ModbusAddress());
 		_slaveConnected = true;
 		break;
 	case SYSTEM_EVENT_STA_DISCONNECTED:

@@ -11,10 +11,10 @@ namespace ModbusAdapter
 	TcpSlave::TcpSlave()
 	{
 	}
-	void TcpSlave::init(long baudRate, long tcpPort, uint8_t mosbusAddress)
+	void TcpSlave::init(long baudRate, uint32_t config, long tcpPort, uint8_t mosbusAddress)
 	{
 		_slavePort = tcpPort;
-		_rtuMaster.Init(baudRate, mosbusAddress);
+		_rtuMaster.Init(baudRate, config, mosbusAddress);
 		_pServer = new WiFiServer(tcpPort);
 		_pServer->begin();
 		_rtuResultCode = EX_SLAVE_FAILURE;

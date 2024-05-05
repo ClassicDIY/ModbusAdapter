@@ -17,7 +17,7 @@ class RtuMaster
 	uint8_t _requestFrameLen;
 public:
 	RtuMaster();
-	void Init(long baudRate, uint8_t mosbussAddress);
+	void Init(long baudRate, uint32_t config, uint8_t mosbussAddress);
 	void Transfer(byte* frame, uint16_t len, void* cb);
 	void Run();
 

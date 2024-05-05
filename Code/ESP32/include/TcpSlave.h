@@ -53,7 +53,7 @@ class TcpSlave
 public:
 	TcpSlave();
 	void cbResponse(ResultCode res, uint8_t* requestFrame, uint8_t requestFrameLen, uint8_t *data, uint16_t len);
-	void init(long baudRate, long tcpPort, uint8_t mosbusAddress);
+	void init(long baudRate, uint32_t config, long tcpPort, uint8_t mosbusAddress);
 	void close();
 	void run();
 };

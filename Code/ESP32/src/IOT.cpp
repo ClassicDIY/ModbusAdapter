@@ -1,28 +1,41 @@
 #include "IOT.h"
 #include <EEPROM.h>
+#include <IotWebConfESP32HTTPUpdateServer.h>
 #include "Log.h"
 
 namespace ModbusAdapter
 {
 
+static const char baudRates[][PORT_OPTIONS_STR_LEN] = { "600", "1200", "1800", "2400", "4800", "9600", "14400", "19200", "38400", "57600", "115200", "230400" };
+static const char dataBits[][PORT_OPTIONS_STR_LEN] = { "5", "6", "7", "8" };
+static const char parity[][PORT_OPTIONS_STR_LEN] = { "none", "even", "odd" };
+static const char stopBits[][PORT_OPTIONS_STR_LEN] = { "1", "2" };
+
+
 DNSServer _dnsServer;
 WebServer _webServer(80);
 HTTPUpdateServer _httpUpdater;
 IotWebConf _iotWebConf(TAG, &_dnsServer, &_webServer, TAG, CONFIG_VERSION);
-String baudSelectOptionsHtml;
 char _modbusPort[IOTWEBCONF_WORD_LEN];
-char _rtuBaudRate[IOTWEBCONF_WORD_LEN];
 char _modbusAddress[IOTWEBCONF_WORD_LEN];
-IotWebConfSeparator seperatorParam = IotWebConfSeparator("Modbus RTU");
-IotWebConfParameter modbusPortParam = IotWebConfParameter("TCP Modbus port", "modbusPortParam", _modbusPort, IOTWEBCONF_WORD_LEN, "number", NULL, "502");
-IotWebConfParameter modbusAddressParam = IotWebConfParameter("Modbus Address", "modbusAddressParam", _modbusAddress, IOTWEBCONF_WORD_LEN, "number", NULL, "10");
-IotWebConfParameter rtuBaudRateSelectParam = IotWebConfParameter(NULL, "baudSelector", _rtuBaudRate, IOTWEBCONF_WORD_LEN, "number", "0", "19200", SELECT_BAUD, true);
+char _rtuBaudRate[PORT_OPTIONS_STR_LEN];
+char _rtuDataBits[PORT_OPTIONS_STR_LEN];
+char _rtuParity[PORT_OPTIONS_STR_LEN];
+char _rtuStopBits[PORT_OPTIONS_STR_LEN];
+
+iotwebconf::ParameterGroup RTU_Group = iotwebconf::ParameterGroup("Modbus RTU", "Modbus RTU");
+iotwebconf::NumberParameter modbusPortParam = iotwebconf::NumberParameter("TCP Modbus port", "modbusPortParam", _modbusPort, IOTWEBCONF_WORD_LEN, "number", NULL, "502");
+iotwebconf::NumberParameter modbusAddressParam = iotwebconf::NumberParameter("Modbus Address", "modbusAddressParam", _modbusAddress, IOTWEBCONF_WORD_LEN, "number", NULL, "10");
+IotWebConfSelectParameter rtuBaudRateSelectParam = IotWebConfSelectParameter("BAUD rate", "baudSelector", _rtuBaudRate, PORT_OPTIONS_STR_LEN, (char*)baudRates, (char*)baudRates, sizeof(baudRates) / PORT_OPTIONS_STR_LEN, PORT_OPTIONS_STR_LEN);
+IotWebConfSelectParameter rtuDataBitsSelectParam = IotWebConfSelectParameter("Data Bits", "dbSelector", _rtuDataBits, PORT_OPTIONS_STR_LEN, (char*)dataBits, (char*)dataBits, sizeof(dataBits) / PORT_OPTIONS_STR_LEN, PORT_OPTIONS_STR_LEN);
+IotWebConfSelectParameter rtuParitySelectParam = IotWebConfSelectParameter("Parity", "paritySelector", _rtuParity, PORT_OPTIONS_STR_LEN, (char*)parity, (char*)parity, sizeof(parity) / PORT_OPTIONS_STR_LEN, PORT_OPTIONS_STR_LEN);
+IotWebConfSelectParameter rtuStopBitsSelectParam = IotWebConfSelectParameter("Stop bits", "stopBitsSelector", _rtuStopBits, PORT_OPTIONS_STR_LEN, (char*)stopBits, (char*)stopBits, sizeof(stopBits) / PORT_OPTIONS_STR_LEN, PORT_OPTIONS_STR_LEN);
 
 void WiFiEvent(WiFiEvent_t event)
 {
 	logd("[WiFi-event] event: %d", event);
 	String s;
-	StaticJsonDocument<128> doc;
+	JsonDocument doc;
 	switch (event)
 	{
 	case SYSTEM_EVENT_STA_GOT_IP:
@@ -66,45 +79,40 @@ void handleRoot()
 	s += " (Free Memory: ";
 	s += ESP.getFreeHeap();
 	s += ")";
+	
 	s += "<ul>";
 	s += "<li>Modbus port: ";
 	s += _modbusPort;
 	s += "</ul>";
+
 	s += "<ul>";
 	s += "<li>Modbus Address: ";
 	s += _modbusAddress;
 	s += "</ul>";
+
 	s += "<ul>";
 	s += "<li>RTU Baud Rate: ";
 	s += _rtuBaudRate;
 	s += "</ul>";
+
+	s += "<ul>";
+	s += "<li>RTU Data Bits: ";
+	s += _rtuDataBits;
+	s += "</ul>";
+
+		s += "<ul>";
+	s += "<li>RTU Parity: ";
+	s += _rtuParity;
+	s += "</ul>";
+
+		s += "<ul>";
+	s += "<li>RTU Stop Bits: ";
+	s += _rtuStopBits;
+	s += "</ul>";
+
 	s += "Go to <a href='config'>configure page</a> to change values.";
 	s += "</body></html>\n";
 	_webServer.send(200, "text/html", s);
-}
-
-boolean formValidator()
-{
-	boolean valid = true;
-
-	String s;
-
-	s = _webServer.arg("baudSelector");
-	logd("baudSelector: %s ", s.c_str());
-
-	strcpy(_rtuBaudRate, s.c_str());
-	return valid;
-}
-
-void LoadBauds(const char *v)
-{
-	String option = BAUD_OPTION;
-	if (strcmp(_rtuBaudRate, v) == 0)
-	{
-		option = BAUD_OPTION_SELECTED;
-	}
-	option.replace("{v}", v);
-	baudSelectOptionsHtml += option;
 }
 
 void IOT::Init()
@@ -124,12 +132,13 @@ void IOT::Init()
 		logw("Factory Reset!");
 	}
 	WiFi.onEvent(WiFiEvent);
-	_iotWebConf.setupUpdateServer(&_httpUpdater);
-	_iotWebConf.addParameter(&seperatorParam);
-	_iotWebConf.addParameter(&modbusPortParam);
-	_iotWebConf.addParameter(&modbusAddressParam);
-	_iotWebConf.addParameter(&rtuBaudRateSelectParam);
-	_iotWebConf.setFormValidator(&formValidator);
+	RTU_Group.addItem(&modbusPortParam);
+	RTU_Group.addItem(&modbusAddressParam);
+	RTU_Group.addItem(&rtuBaudRateSelectParam);
+	RTU_Group.addItem(&rtuDataBitsSelectParam);
+	RTU_Group.addItem(&rtuParitySelectParam);
+	RTU_Group.addItem(&rtuStopBitsSelectParam);
+	_iotWebConf.addParameterGroup(&RTU_Group);
 	boolean validConfig = _iotWebConf.init();
 	if (!validConfig)
 	{
@@ -138,6 +147,9 @@ void IOT::Init()
 		strcpy(_modbusPort, DEFAULT_PORT);
 		strcpy(_modbusAddress, DEFAULT_MODBUS_ADDRESS);
 		strcpy(_rtuBaudRate, DEFAULT_BAUD);
+		strcpy(_rtuDataBits, DEFAULT_DataBits);
+		strcpy(_rtuParity, DEFAULT_PARITY);
+		strcpy(_rtuStopBits, DEFAULT_StopBits);
 	}
 	else
 	{
@@ -145,25 +157,7 @@ void IOT::Init()
 	}
 	// Set up required URL handlers on the web server.
 	_webServer.on("/", handleRoot);
-	_webServer.on("/config", [] {
-		baudSelectOptionsHtml.clear();
-		LoadBauds("600");
-		LoadBauds("1200");
-		LoadBauds("1800");
-		LoadBauds("2400");
-		LoadBauds("4800");
-		LoadBauds("9600");
-		LoadBauds("14400");
-		LoadBauds("19200");
-		LoadBauds("38400");
-		LoadBauds("57600");
-		LoadBauds("115200");
-		LoadBauds("230400");
-		String pitem = SELECT_BAUD;
-		pitem.replace("{o}", baudSelectOptionsHtml);
-		rtuBaudRateSelectParam.customHtml = pitem.c_str();
-		_iotWebConf.handleConfig();
-	});
+	_webServer.on("/config", [] { _iotWebConf.handleConfig(); });
 	_webServer.onNotFound([]() { _iotWebConf.handleNotFound(); });
 }
 
@@ -180,7 +174,7 @@ void IOT::Run()
 		{
 			String s = Serial.readStringUntil('}');
 			s += "}";
-			StaticJsonDocument<128> doc;
+			JsonDocument doc;
 			DeserializationError err = deserializeJson(doc, s);
 			if (err)
 			{
@@ -190,7 +184,7 @@ void IOT::Run()
 			{
 				if (doc.containsKey("ssid") && doc.containsKey("password"))
 				{
-					IotWebConfParameter *p = _iotWebConf.getWifiSsidParameter();
+					iotwebconf::Parameter *p = _iotWebConf.getWifiSsidParameter();
 					strcpy(p->valueBuffer, doc["ssid"]);
 					logd("Setting ssid: %s", p->valueBuffer);
 					p = _iotWebConf.getWifiPasswordParameter();
@@ -198,7 +192,7 @@ void IOT::Run()
 					logd("Setting password: %s", p->valueBuffer);
 					p = _iotWebConf.getApPasswordParameter();
 					strcpy(p->valueBuffer, TAG); // reset to default AP password
-					_iotWebConf.configSave();
+					_iotWebConf.saveConfig();
 					esp_restart(); // force reboot
 				}
 				else
@@ -217,6 +211,33 @@ void IOT::Run()
 int IOT::BaudRate()
 {
 	return atoi(_rtuBaudRate);
+}
+
+uint32_t IOT::SerialConfig()
+{
+	// stops 5
+	// parity bit 0 , 1
+	// bits  bit 2, 3
+	logd("Config %s %s %s", _rtuDataBits, _rtuParity, _rtuStopBits);
+	uint32_t config = SERIAL_5N1;
+	config |= (atoi(_rtuStopBits) == 2 ? 0x00000030 : 0x00000010);
+	switch (atoi(_rtuDataBits)) {
+		case 6:
+		config |= 0x00000004;
+		break;
+		case 7:
+		config |= 0x00000008;
+		break;
+		case 8:
+		config |= 0x0000000C;
+		break;
+	}
+	if (strcmp(_rtuParity, "even") == 0) {
+		config |= 0x00000002;
+	} else if (strcmp(_rtuParity, "odd") == 0) {
+		config |= 0x00000003;
+	}
+	return config;
 }
 
 uint8_t IOT::ModbusAddress()
